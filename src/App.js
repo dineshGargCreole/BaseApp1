@@ -3,11 +3,16 @@ import { Button, Divider, Modal, Form } from 'antd';
 import './App.css';
 import DisplayUsers from './components/DisplayUsers';
 import CreateUser from './components/CreateUser';
+import AppSearch from './components/AppSearch'
+import SelectedDelete from './components/SelectedDelete'
 
 function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [form] = Form.useForm();
+  const [editRow, setEditRow] = useState(null);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const setModal = () => {
     setIsOpen({isOpen: !isOpen})
@@ -21,6 +26,7 @@ function App() {
       key: randomNumber
     }
     setUsers([...users, newUser]);
+    setFilteredUsers([...users, newUser]);
     setIsOpen(false)
   }
 
@@ -30,21 +36,40 @@ function App() {
       content: 'Are you sure to delete?',
       okText: 'Yes',
       onOk: () =>{
-        const newUsers = users.filter(user => user.id !== id)
+        const newUsers = filteredUsers.filter(user => user.id !== id)
 
-        setUsers(newUsers);
+        setFilteredUsers(newUsers);
       }
     })
   }
 
   const editUser = (data) => {
-    console.log(data);
-    form.setFieldsValue({
-      name: data.name,
-      age: data.age,
-      address: data.address
+    const updatedUsers = users.map(user => {
+      if (user.key === editRow) {
+        return {...data, key: editRow, id: editRow}
+      } else {
+        return user
+      }
+    })
+    setUsers(updatedUsers);
+    form.resetFields();
+    setEditRow(null)
+  }
+
+  const searchUser = (value) => {
+    if (value === '') {
+      setFilteredUsers(users)
+    } else {
+      const newUsers = users.filter(user => user.name === value)
+      setFilteredUsers(newUsers)
+    }
+  }
+
+  const removeSelectedUsers = () => {
+    const newUsers = filteredUsers.filter(function(obj) {
+      return !selectedRowKeys.includes(obj.key)
     });
-    setModal();
+    setFilteredUsers(newUsers);
   }
 
   return (
@@ -56,8 +81,11 @@ function App() {
         New User
       </Button>
       <Divider />
-      <h1>hello</h1>
-      <DisplayUsers users={users} removeUser={removeUser} editUser={editUser} />
+      <SelectedDelete removeSelectedUsers={removeSelectedUsers} />
+      <AppSearch searchUser={searchUser} />
+      <DisplayUsers users={filteredUsers} removeUser={removeUser} editRow={editRow} setEditRow={setEditRow} form={form} editUser={editUser}
+        setSelectedRowKeys={setSelectedRowKeys} selectedRowKeys={selectedRowKeys}
+      />
       <Modal
         visible={isOpen}
         title="New User"
