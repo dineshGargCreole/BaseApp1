@@ -1,10 +1,14 @@
-import React, {useCallback, useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import { Button, Divider, Modal, Form } from 'antd';
 import './App.css';
 import DisplayUsers from './components/DisplayUsers';
 import CreateUser from './components/CreateUser';
 import AppSearch from './components/AppSearch'
 import SelectedDelete from './components/SelectedDelete'
+import AppHeader from './components/AppHeader';
+import Global from './GlobalStyles'
+import UserServices from './services/UserServices'
+
 
 function App() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +17,11 @@ function App() {
   const [editRow, setEditRow] = useState(null);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  useEffect(async () => {
+    let x = await UserServices.getUsers()
+    console.log('data', x)
+  })
 
   const setModal = () => {
     setIsOpen({isOpen: !isOpen})
@@ -39,6 +48,7 @@ function App() {
         const newUsers = filteredUsers.filter(user => user.id !== id)
 
         setFilteredUsers(newUsers);
+        setUsers(newUsers);
       }
     })
   }
@@ -52,6 +62,7 @@ function App() {
       }
     })
     setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
     form.resetFields();
     setEditRow(null)
   }
@@ -60,48 +71,48 @@ function App() {
     if (value === '') {
       setFilteredUsers(users)
     } else {
-      const newUsers = users.filter(user => user.name === value)
+      const newUsers = users.filter(user => user.name.toLowerCase().includes(value.toLowerCase()))
+      // const newUsers = users.filter(user => user.name === value)
       setFilteredUsers(newUsers)
     }
   }
 
   const removeSelectedUsers = () => {
+    // const newUsers = filteredUsers.filter(obj => selectedRowKeys.includes(!obj.key));
     const newUsers = filteredUsers.filter(function(obj) {
       return !selectedRowKeys.includes(obj.key)
     });
     setFilteredUsers(newUsers);
+    setUsers(newUsers);
   }
 
   return (
-    <div className="App">
-      <Button
-        type="text"
-        onClick={setModal}
-      >
-        New User
-      </Button>
-      <Divider />
-      <SelectedDelete removeSelectedUsers={removeSelectedUsers} />
-      <AppSearch searchUser={searchUser} />
-      <DisplayUsers users={filteredUsers} removeUser={removeUser} editRow={editRow} setEditRow={setEditRow} form={form} editUser={editUser}
-        setSelectedRowKeys={setSelectedRowKeys} selectedRowKeys={selectedRowKeys}
-      />
-      <Modal
-        visible={isOpen}
-        title="New User"
-        onCancel={() => setIsOpen(false)}
-        okText='Submit'
-        onOk={() => setIsOpen(false)}
-        footer={null}
-      >
-        <CreateUser
-          addUser={addUser}
-          onCancel={() => {
-            setIsOpen(false)
-          }}
-          form={form}
+    <div>
+      <AppHeader setModal={setModal} />
+      <div className="App">
+        <Global />
+        <SelectedDelete removeSelectedUsers={removeSelectedUsers} />
+        <AppSearch searchUser={searchUser} />
+        <DisplayUsers users={filteredUsers} removeUser={removeUser} editRow={editRow} setEditRow={setEditRow} form={form} editUser={editUser}
+          setSelectedRowKeys={setSelectedRowKeys} selectedRowKeys={selectedRowKeys}
         />
-      </Modal>
+        <Modal
+          visible={isOpen}
+          title="New User"
+          onCancel={() => setIsOpen(false)}
+          okText='Submit'
+          onOk={() => setIsOpen(false)}
+          footer={null}
+        >
+          <CreateUser
+            addUser={addUser}
+            onCancel={() => {
+              setIsOpen(false)
+            }}
+            form={form}
+          />
+        </Modal>
+      </div>
     </div>
   );
 }

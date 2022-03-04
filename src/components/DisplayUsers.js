@@ -1,5 +1,7 @@
 import React from 'react'
-import { Table, Tag, Space, Form, Input, Button } from 'antd';
+import { Table, Tag, Space, Form, Input, Button} from 'antd';
+import { PlusCircleOutlined, MinusCircleOutlined } from "@ant-design/icons";
+import './Styles.css'
 
 function DisplayUsers(props) {
   const columns = [
@@ -26,6 +28,7 @@ function DisplayUsers(props) {
       title: 'Age',
       dataIndex: 'age',
       key: 'age',
+      sorter: (a,b) => a.age - b.age,
       render: (text, record) => {
         if(record.key === props.editRow) {
           return <Form.Item
@@ -112,13 +115,45 @@ function DisplayUsers(props) {
   
   return (
     <Form form={props.form} onFinish={props.editUser}>
-      <Table columns={columns} dataSource={props.users}
+      <Table
+        columns={columns}
+        dataSource={props.users}
         rowSelection={{
           type: 'checkbox',
           selectedRowKeys: props.selectedRowKeys,
           onChange: (selectedRowKeys) => {
             props.setSelectedRowKeys(selectedRowKeys);
-          }
+          },
+          selections:[
+            Table.SELECTION_ALL,
+            Table.SELECTION_NONE,
+            {
+              key: 'even',
+              text: 'Select Even Row',
+              onSelect: changeableRowKeys => {
+                const newSelectedRowKeys = changeableRowKeys.filter((key,index) => {
+                  if (index%2 !== 0) {
+                    return true
+                  }
+                  return false;
+                })
+                props.setSelectedRowKeys(newSelectedRowKeys);
+              }
+            }
+          ],
+        }}
+        expandable={{
+          expandedRowRender: record => <p>{`My name is ${record.name}. I am ${record.age} years old. I am from ${record.address}.`}</p>,
+          expandIcon: ({expanded, onExpand, record}) => expanded ? (
+            <MinusCircleOutlined onClick={e => onExpand(record, e)} />
+          ) : (
+            <PlusCircleOutlined onClick={e => onExpand(record, e)} />
+          )
+        }}
+        pagination={{
+          total: "500",
+          pageSize: '2',
+          // position: ["topLeft"]
         }}
       />
     </Form>

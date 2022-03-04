@@ -7,7 +7,12 @@ const { Search } = Input;
 function AppSearch(props) {
   return (
     <div className='search-size'>
-        <Search placeholder="search by name" enterButton onSearch={props.searchUser} />
+        <Search
+          placeholder="search by name"
+          enterButton
+          onSearch={props.searchUser}
+          onChange={(e) => props.searchUser(e.target.value)}
+        />
     </div>
   )
 }

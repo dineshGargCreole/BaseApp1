@@ -28,7 +28,7 @@ function CreateUser(props) {
                 name='age'
                 label='Age'
                 rules={[
-                    {required: true, message: 'This field is required'}
+                    {required: true, message: 'This field is required', pattern: new RegExp(/^[0-9]+$/)}
                 ]}
             >
                 <Input />
